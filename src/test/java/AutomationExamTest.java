@@ -1,7 +1,9 @@
 import com.checkmarx.automation.test.config.AutomationTestBase;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.*;
+import org.springframework.web.client.HttpClientErrorException;
 
 /**
  * Created by PavelV on 5/19/2021
@@ -12,36 +14,56 @@ public class AutomationExamTest extends AutomationTestBase {
         mockServer();
     }
 
+    /**
+     * Write a test that connects to the Access Control with a valid credentials.
+     * Use <i>http://accesscontrol</i> to connect
+     * Use <i>credentialsJson</i> for this test.
+     * If the token value is <b>"valid_token"</b> then success
+     */
     @Test
-    public void testConnectToAcSuccess() {
+    public void testConnectToACSuccess() {
         String responseEntity;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> request = new HttpEntity<>(credentialsJson, headers);
         try {
             responseEntity = restTemplate.postForObject("http://accesscontrol", request, String.class);
-            System.out.println("Logged In with token: " + responseEntity);
+//            System.out.println("Logged In with token: " + tokenValue); //take the value of the token
+//            Assert.assertEquals("valid_token", tokenValue);
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
+            Assert.fail();
         }
     }
 
+    /**
+     * Write a test that connects to the Access Control with bad credentials.
+     * Use <i>http://accesscontrol</i> to connect
+     * Use <i>wrongCredentialsJson</i> for this test.
+     * If the status code is <b>401</b> then success
+     */
     @Test
-//    @Test(expected = AssertionError.class)
-    public void testConnectToAcFailure() {
-        String responseEntity;
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<String> request = new HttpEntity<>(wrongCredentialsJson, headers);
+    public void testConnectToACFailure() {
         try {
-            responseEntity = restTemplate.postForObject("http://accesscontrol", request, String.class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<String> request = new HttpEntity<>(wrongCredentialsJson, headers);
+            String responseEntity = restTemplate.postForObject("http://accesscontrol", request, String.class);
             System.out.println("Logged In with token: " + responseEntity);
-        } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            Assert.fail("You should not be able to log in with these credentials");
+        } catch (HttpClientErrorException e) {
+            System.out.println("Error: " + e.getStatusCode());
+            Assert.assertEquals(401, e.getRawStatusCode());
         }
     }
 
+    /**
+     * Write a test that connects to the Access Control with a valid credentials.
+     * Use <i>credentialsJson</i> for this test.
+     * Use the received token in the <b>Authorization</b> header to get the items from the <i>http://backend/items</i>
+     * If you are able to retrieve the items - success
+     */
     @Test
     public void testGetItemsSuccess() {
         HttpHeaders headersAC = new HttpHeaders();
