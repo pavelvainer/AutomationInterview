@@ -10,14 +10,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.client.MockRestServiceServer;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.test.web.client.ExpectedCount.manyTimes;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withUnauthorizedRequest;
 
 /**
  * Created by PavelV on 5/19/2021
@@ -32,22 +31,28 @@ public class AutomationTestBase {
     @Autowired
     private WebApplicationContext wac;
 
-    protected MockMvc mockMvc;
     protected MockRestServiceServer mockServer;
 
-    protected final String credentialsJson = "{\n" +
+    protected static final String credentialsJson = "{\n" +
             "  username: \"sa\",\n" +
             "  password: \"sa\"\n" +
             "}";
 
-    protected final String wrongCredentialsJson = "{\n" +
+    protected static final String wrongCredentialsJson = "{\n" +
             "  username: \"sa\",\n" +
             "  password: \"sa1\"\n" +
             "}";
 
+    private static final String items = "{\n" +
+            "  \"items\": [\n" +
+            "    \"phone\",\n" +
+            "    \"charger\",\n" +
+            "    \"headphones\"\n" +
+            "  ]\n" +
+            "}";
+
     @Before
     public void setUp() {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
         mockServer = MockRestServiceServer.bindTo(restTemplate).ignoreExpectOrder(true).build();
     }
 
@@ -64,11 +69,10 @@ public class AutomationTestBase {
 
         mockServer.expect(manyTimes(), requestTo("http://backend/items"))
                 .andExpect(method(HttpMethod.GET)).andExpect(header("Authorization", "valid_token"))
-                .andRespond(withSuccess().body("{\"items\": [\"phone\", \"charger\"]}"));
+                .andRespond(withSuccess(items, MediaType.APPLICATION_JSON));
     }
 
     @After
     public void tearDown() {
-//        mockServer.verify();
     }
 }

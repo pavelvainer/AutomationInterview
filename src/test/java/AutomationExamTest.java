@@ -6,7 +6,10 @@ import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
 
 /**
- * Created by PavelV on 5/19/2021
+ * You can use the following predefined variables:
+ * <br><b>restTemplate</b>
+ * <br><b>credentialsJson</b>
+ * <br><b>wrongCredentialsJson</b>
  */
 public class AutomationExamTest extends AutomationTestBase {
     @Before
@@ -16,9 +19,9 @@ public class AutomationExamTest extends AutomationTestBase {
 
     /**
      * Write a test that connects to the Access Control with a valid credentials.
-     * Use <i>http://accesscontrol</i> to connect
-     * Use <i>credentialsJson</i> for this test.
-     * If the token value is <b>"valid_token"</b> then success
+     * <br>Use <i>http://accesscontrol</i> to connect
+     * <br>Use <b>credentialsJson</b> for this test.
+     * <br>If the token value is <b>"valid_token"</b> then success
      */
     @Test
     public void testConnectToACSuccess() {
@@ -38,19 +41,19 @@ public class AutomationExamTest extends AutomationTestBase {
 
     /**
      * Write a test that connects to the Access Control with bad credentials.
-     * Use <i>http://accesscontrol</i> to connect
-     * Use <i>wrongCredentialsJson</i> for this test.
-     * If the status code is <b>401</b> then success
+     * <br>Use <i>http://accesscontrol</i> to connect
+     * <br>Use <b>wrongCredentialsJson</b> for this test.
+     * <br>If the status code is <b>401</b> then success
      */
     @Test
     public void testConnectToACFailure() {
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-            HttpEntity<String> request = new HttpEntity<>(wrongCredentialsJson, headers);
+        HttpEntity<String> request = new HttpEntity<>(wrongCredentialsJson, headers);
+        try {
             String responseEntity = restTemplate.postForObject("http://accesscontrol", request, String.class);
-            System.out.println("Logged In with token: " + responseEntity);
+//            System.out.println("Logged In with token: " + responseEntity);
             Assert.fail("You should not be able to log in with these credentials");
         } catch (HttpClientErrorException e) {
             System.out.println("Error: " + e.getStatusCode());
@@ -60,9 +63,9 @@ public class AutomationExamTest extends AutomationTestBase {
 
     /**
      * Write a test that connects to the Access Control with a valid credentials.
-     * Use <i>credentialsJson</i> for this test.
-     * Use the received token in the <b>Authorization</b> header to get the items from the <i>http://backend/items</i>
-     * If you are able to retrieve the items - success
+     * <br>Use <b>credentialsJson</b> for this test.
+     * <br>Use the received token in the <b>Authorization</b> header to get the items from the <i>http://backend/items</i>
+     * <br>If you are able to retrieve the items - print the list of items and return success
      */
     @Test
     public void testGetItemsSuccess() {
